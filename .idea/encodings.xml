@@ -1,7 +1,29 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/ReflectionTesting/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day1/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day4/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day5/inventory-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day5/order-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day5/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day5/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day6/inventory-client/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day6/inventory-contract/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day6/inventory-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day6/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day6/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/inventory-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/order-inventory-system/inventory-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/order-inventory-system/order-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/order-inventory-system/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/order-inventory-system/src/main/resources" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/order-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/proxy-testing/ReflectionTesting/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/proxy-testing/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
+    <file url="file:///src/main/java" charset="UTF-8" />
+    <file url="file:///src/main/resources" charset="UTF-8" />
   </component>
 </project>

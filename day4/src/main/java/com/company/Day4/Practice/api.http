@@ -1,0 +1,77 @@
+@host = http://localhost:8080
+
+### 1. Создать заказ -> 201
+POST {{host}}/api/V1
+Content-Type: application/json
+Idempotency-Key:a4f89d32-e2b1-4c7b-99f5-76b32871f90a
+
+{
+  "id": 2,
+  "ProductId": 10,
+  "quantity": 2,
+  "status": "NEW"
+}
+
+
+
+### 2. Список заказов -> 200
+GET {{host}}/orders
+
+### 3. Один заказ -> 200
+GET {{host}}/orders/{{orderId}}
+
+### 4. NEW -> PAID -> 200
+PATCH {{host}}/orders/{{orderId}}/status
+Content-Type: application/json
+
+{
+  "status": "PAID"
+}
+
+### 5. PAID -> SHIPPED -> 200
+PATCH {{host}}/orders/{{orderId}}/status
+Content-Type: application/json
+
+{
+  "status": "SHIPPED"
+}
+
+### 6. SHIPPED -> CANCELLED -> 409 (финальный статус)
+PATCH {{host}}/orders/{{orderId}}/status
+Content-Type: application/json
+
+{
+  "status": "CANCELLED"
+}
+
+> {%
+    client.test("Конфликт 409", () => client.assert(response.status === 409));
+%}
+
+### 7. Несуществующий заказ -> 404
+GET {{host}}/orders/999999
+
+> {%
+    client.test("Не найден 404", () => client.assert(response.status === 404));
+%}
+
+### 8. Невалидное тело (quantity <= 0) -> 400
+POST {{host}}/orders
+Content-Type: application/json
+
+{
+  "productId": 42,
+  "quantity": 0
+}
+
+> {%
+    client.test("Ошибка 400", () => client.assert(response.status === 400));
+%}
+
+### 9. Неизвестный статус -> 400
+PATCH {{host}}/orders/{{orderId}}/status
+Content-Type: application/json
+
+{
+  "status": "LOST"
+}

@@ -1,0 +1,20 @@
+syntax = "proto3";
+package inventory;
+option java_package = "com.company.grpc";
+
+message CheckStockRequest{
+  string sku = 1;
+}
+
+message CheckStockResponse{
+  string sku = 1;
+  int32 quantity = 2;
+  bool inStock = 3;
+}
+// Server interface
+service InventoryService{
+  rpc CheckStock(CheckStockRequest) returns (CheckStockResponse);
+}
+
+
+
