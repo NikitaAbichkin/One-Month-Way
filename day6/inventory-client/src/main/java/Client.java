@@ -33,8 +33,10 @@ public class Client {
                     .build();
             try {
                 Inventory.CheckStockResponse response = stub.
-                        withDeadlineAfter(Duration.ofSeconds(2))
+                        withDeadlineAfter(Duration.ofSeconds(1))
                         .checkStock(request);
+
+
                 System.out.printf("sku = %-16s instock = %-5s quantity = %d%n", response.getSku(),
                         response.getInStock(),
                         response.getQuantity());
@@ -43,10 +45,14 @@ public class Client {
 
                if ( code == Status.Code.NOT_FOUND){
                    System.out.printf("sku = %-16s NOT FOUND%n", sku);
+                   System.out.println(e.getMessage());
                }
                else if ( code == Status.Code.UNAVAILABLE){
                    System.out.println("Inventory service is unavailable, stopping checks");
                     break;
+               }
+               else {
+                   System.out.printf("sku = %-16s error: %s (%s)%n", sku, code, e.getStatus().getDescription());
                }
             }
         }

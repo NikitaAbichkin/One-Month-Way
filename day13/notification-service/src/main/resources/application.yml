@@ -1,0 +1,16 @@
+server:
+  port: 8084
+
+spring:
+  application:
+    name: notification-service13
+  datasource:
+    url: jdbc:postgresql://localhost:5436/notification_db
+#    username: notification_user
+#    password: notification_pass
+    username: order_user
+    password: order_pass
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: none

@@ -7,6 +7,7 @@ public class Main {
     static void main() throws IOException, InterruptedException {
 
         Server server = ServerBuilder.forPort(9090)
+                .intercept(new LoggingInterceptor())
                 .addService(new InventoryServiceImp()).build();
 
         server.start();

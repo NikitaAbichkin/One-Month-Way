@@ -1,0 +1,63 @@
+# Один Kafka на все сервисы, у каждого сервиса своя Postgres
+services:
+  kafka:
+    image: apache/kafka:3.9.0
+    container_name: day15_kafka
+    ports:
+      - "39092:39092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:39092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:39092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 1
+
+  kafka-ui:
+    image: ghcr.io/kafbat/kafka-ui:latest
+    container_name: day15_kafka_ui
+    ports:
+      - "8190:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+    depends_on:
+      - kafka
+
+  order-db:
+    image: postgres:16
+    container_name: day15_order_db
+    ports: ["5451:5432"]
+    environment: { POSTGRES_DB: order_db, POSTGRES_USER: app, POSTGRES_PASSWORD: app }
+    volumes: [order_data:/var/lib/postgresql/data]
+
+  inventory-db:
+    image: postgres:16
+    container_name: day15_inventory_db
+    ports: ["5452:5432"]
+    environment: { POSTGRES_DB: inventory_db, POSTGRES_USER: app, POSTGRES_PASSWORD: app }
+    volumes: [inventory_data:/var/lib/postgresql/data]
+
+  payment-db:
+    image: postgres:16
+    container_name: day15_payment_db
+    ports: ["5453:5432"]
+    environment: { POSTGRES_DB: payment_db, POSTGRES_USER: app, POSTGRES_PASSWORD: app }
+    volumes: [payment_data:/var/lib/postgresql/data]
+
+  notification-db:
+    image: postgres:16
+    container_name: day15_notification_db
+    ports: ["5454:5432"]
+    environment: { POSTGRES_DB: notification_db, POSTGRES_USER: app, POSTGRES_PASSWORD: app }
+    volumes: [notification_data:/var/lib/postgresql/data]
+
+volumes:
+  order_data:
+  inventory_data:
+  payment_data:
+  notification_data:

@@ -1,0 +1,30 @@
+  services:
+    kafka:
+      image: apache/kafka:3.9.0
+      ports:
+        - "29092:29092"
+      environment:
+        KAFKA_NODE_ID: 1
+        KAFKA_PROCESS_ROLES: broker,controller
+        # роли кафки( брокер - принимать сообщения,
+        #контроллер хранить  обмен метаданными между другими брокерами)
+
+        KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:29092 #(порт + название )
+        KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:29092
+        #укаываем что  отвечать при обращении, ведь давать данные локал
+        KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+        KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER # какой лисенер использовать для контроллера
+        KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093 #
+        KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
+        #общение без шифрования во всех портах
+        KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1 #колличество реплик у служебного топика
+        KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 1 # при старте сколько секунд ждать чтобы получить все заявки на вхождение в группу
+    kafka-ui:
+      image: ghcr.io/kafbat/kafka-ui:latest
+      ports:
+        - "8080:8080"
+      environment:
+        KAFKA_CLUSTERS_0_NAME: local
+        KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:9092
+      depends_on:
+        - kafka

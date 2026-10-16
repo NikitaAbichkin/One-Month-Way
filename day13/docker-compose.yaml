@@ -1,0 +1,58 @@
+services:
+  order-db:
+    image: postgres:17
+    container_name: order_db
+    ports:
+      - "5433:5432"
+    environment:
+      POSTGRES_DB: order_db
+      POSTGRES_USER: order_user
+      POSTGRES_PASSWORD: order_pass
+    volumes:
+      - order_data:/var/lib/postgresql/data
+      - ./db/order/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  inventory-db:
+    image: postgres:17
+    container_name: inventory_db
+    ports:
+      - "5434:5432"
+    environment:
+      POSTGRES_DB: inventory_db
+      POSTGRES_USER: inventory_user
+      POSTGRES_PASSWORD: inventory_pass
+    volumes:
+      - inventory_data:/var/lib/postgresql/data
+      - ./db/inventory/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  payment-db:
+    image: postgres:17
+    container_name: payment_db
+    ports:
+      - "5435:5432"
+    environment:
+      POSTGRES_DB: payment_db
+      POSTGRES_USER: payment_user
+      POSTGRES_PASSWORD: payment_pass
+    volumes:
+      - payment_data:/var/lib/postgresql/data
+      - ./db/payment/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+  notification-db:
+    image: postgres:17
+    container_name: notification_db
+    ports:
+      - "5436:5432"
+    environment:
+      POSTGRES_DB: notification_db
+      POSTGRES_USER: notification_user
+      POSTGRES_PASSWORD: notification_pass
+    volumes:
+      - notification_data:/var/lib/postgresql/data
+      - ./db/notification/init.sql:/docker-entrypoint-initdb.d/init.sql
+
+volumes:
+  order_data:
+  inventory_data:
+  payment_data:
+  notification_data:

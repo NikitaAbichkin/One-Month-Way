@@ -1,0 +1,7 @@
+# Redis для gateway (day16)
+services:
+  redis:
+    image: redis:7-alpine
+    container_name: day16_redis
+    ports:
+      - "6379:6379"

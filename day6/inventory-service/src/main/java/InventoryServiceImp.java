@@ -31,6 +31,11 @@ public class InventoryServiceImp  extends
         if (!hasThisSku){
             StatusRuntimeException notFoundSkuException = Status.NOT_FOUND.withDescription("There is not this sku ")
                     .asRuntimeException();
+            try {
+                Thread.sleep(10000);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            }
 
             responseObserver.onError(notFoundSkuException);
             return;
