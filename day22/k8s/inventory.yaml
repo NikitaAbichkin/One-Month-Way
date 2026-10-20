@@ -1,0 +1,70 @@
+# ===== Deployment: поды inventory =====
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name:  inventory                          # TODO: имя Deployment
+spec:
+  replicas: 2                        # TODO: сколько подов (например, 2)
+  selector:
+    matchLabels:
+      app: inventory                         # TODO: метка подов
+  template:
+    metadata:
+      labels:
+        app:  inventory                     # TODO: та же метка, что в selector
+    spec:
+      containers:
+        - name: inventory
+          image: inventory:1.0                   # TODO: образ, который загрузил в kind
+          ports:
+            - containerPort: 8082      # TODO: порт приложения (смотри server.port в application.properties)
+          resources:
+            requests:
+              cpu: 250m
+              memory: 768Mi
+            limits:
+              cpu: 1
+              memory: 768Mi
+
+          env:
+            - name: JAVA_TOOL_OPTIONS
+              value: -XX:MaxRAMPercentage=75
+            - name:  MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED
+              value: "true"
+
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8082
+            periodSeconds: 5
+            failureThreshold: 30
+          readinessProbe: # готов ли под принимать трафик
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8082
+            periodSeconds: 5       # раз в сколько секунд
+            timeoutSeconds: 3      # сколько ждать ответа
+            failureThreshold: 3
+          livenessProbe: # жив ли процесс (если нет, kubelet перезапустит контейнер)
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8082
+            periodSeconds: 10      # раз в сколько секунд делать попытку
+            timeoutSeconds: 3      # сколько ждать ответа
+            failureThreshold: 3    # три раза упал = перезапуск
+          lifecycle:
+            preStop:
+              sleep:
+                seconds: 5
+---
+# ===== Service: постоянное имя inventory =====
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory                           # TODO: имя, по которому order будет обращаться (смотри INVENTORY_URL)
+spec:
+  selector:
+    app: inventory                            # TODO: метка подов inventory
+  ports:
+    - port: 8080                        # TODO: порт Service (смотри INVENTORY_URL)
+      targetPort: 8082                 # TODO: порт контейнера

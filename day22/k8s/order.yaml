@@ -1,0 +1,92 @@
+# ===== Deployment: "держи 3 пода с order" =====
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order
+spec:
+  replicas: 3                      # сколько подов: 3
+  selector:
+    matchLabels:
+      app: order
+  template:
+    metadata:
+      labels:
+        app: order                 # такая же метка
+    spec:
+      topologySpreadConstraints:   # размазать поды по нодам
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: order
+      containers:
+        - name: order
+          image: order:1.2         # образ, загруженный через kind load
+          resources:
+            requests:
+              cpu: 250m
+              memory: 768Mi
+            limits:
+              cpu: 1
+              memory: 768Mi
+          ports:
+            - containerPort: 8080
+          env:                     # то же, что environment в compose
+            - name: SPRING_DATASOURCE_USERNAME
+              value: app
+
+            - name: SPRING_DATASOURCE_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: order-db
+                  key: password_db
+
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: update
+            - name: APP_VERSION
+              value: "1.1"
+            - name: MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED
+              value: "true"
+          envFrom: # говорю откуда взять настройки для енв
+            - configMapRef:
+                name: order-config # имя в метадата конфига
+
+          readinessProbe:          # готов ли под принимать трафик
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            periodSeconds: 5       # раз в сколько секунд
+            timeoutSeconds: 3      # сколько ждать ответа
+            failureThreshold: 3
+          livenessProbe:           # жив ли процесс (если нет, kubelet перезапустит контейнер)
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            periodSeconds: 10      # раз в сколько секунд делать попытку
+            timeoutSeconds: 3      # сколько ждать ответа
+            failureThreshold: 3    # три раза упал = перезапуск
+          lifecycle:
+            preStop:
+              sleep:
+                seconds: 5         # под ещё 5 секунд работает, пока его убирают из Service
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            periodSeconds: 5
+            failureThreshold: 30
+
+
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order
+spec:
+  selector:
+    app: order
+  ports:
+    - port: 8080
+      targetPort: 8080

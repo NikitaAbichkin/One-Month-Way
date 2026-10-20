@@ -1,0 +1,9 @@
+# ===== ConfigMap: несекретные настройки order =====
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: order-config
+data:                            # ключ = имя переменной окружения в поде
+  SPRING_DATASOURCE_URL: jdbc:postgresql://order-db:5432/order_db
+  INVENTORY_URL: http://inventory:8080
+  JAVA_TOOL_OPTIONS: -XX:MaxRAMPercentage=75

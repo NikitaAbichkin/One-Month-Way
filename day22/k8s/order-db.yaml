@@ -1,0 +1,52 @@
+# ===== 1. Deployment: "держи 1 под с postgres" =====
+# Запустится на одной из нод
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: order-db
+spec:
+  replicas: 1                      # сколько подов: 1
+  selector:
+    matchLabels:
+      app: order-db                # метка, по которой Deployment находит свои поды
+  template:                        # шаблон пода
+    metadata:
+      labels:
+        app: order-db              # такая же метка, как выше
+    spec:
+      containers:
+        - name: postgres-order-db
+          image: postgres:17
+          ports:
+            - containerPort: 5432  # порт внутри контейнера
+          env:                     # переменные, как в compose
+            - name: POSTGRES_DB
+              value: order_db
+            - name: POSTGRES_USER
+              value: app
+            - name: POSTGRES_PASSWORD
+              value: app
+          readinessProbe:          # готов ли Postgres принимать подключения
+            exec:
+              command: ["pg_isready", "-h", "localhost", "-U", "app", "-d", "order_db"]
+            initialDelaySeconds: 5
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+---
+# ===== 2. Service: постоянное имя order-db:5432 =====
+apiVersion: v1
+kind: Service
+metadata:
+  name: order-db                   # по этому имени order найдёт БД
+spec:
+  selector:
+    app: order-db                  # на какие поды слать трафик (та же метка)
+  ports:
+    - port: 5432                   # порт Service
+      targetPort: 5432             # порт контейнера
+
+# CNI делает связку, куда отправить запрос, чтобы прийти к назначению:
+# поды могут быть запущены на разных нодах (сеть разная внутри).
+# DNS мапит наш запрос на реальный адрес (ClusterIP, напр. 10.96.1.5)
+# с помощью подмены имени.
