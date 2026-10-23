@@ -1,0 +1,80 @@
+# ===== Deployment: поды notification =====
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification
+spec:
+  replicas: 1                      # сколько подов
+  selector:
+    matchLabels:
+      app: notification
+  template:
+    metadata:
+      labels:
+        app: notification                # такая же метка
+    spec:
+      initContainers:              # k8s не умеет depends_on: ждем, пока БД и Kafka начнут принимать подключения
+        - name: wait-for-deps
+          image: busybox:1.36
+          command: ["sh", "-c", "until nc -z notification-db 5432; do sleep 2; done; until nc -z kafka 9092; do sleep 2; done;"]
+      containers:
+        - name: notification
+          image: marketplace-notification:latest   # образ из docker compose build, загруженный через kind load
+          imagePullPolicy: IfNotPresent      # без этого для тега latest k8s пойдет в интернет за образом
+          ports:
+            - containerPort: 8086
+          resources:
+            requests:
+              cpu: 100m
+              memory: 384Mi
+            limits:
+              cpu: 1
+              memory: 768Mi
+          env:                     # то же, что environment в compose
+            - name: JAVA_TOOL_OPTIONS
+              value: "-XX:MaxRAMPercentage=75"
+            - name: MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED
+              value: "true"
+            - name: MANAGEMENT_TRACING_SAMPLING_PROBABILITY
+              value: "0"
+            - name: SPRING_DATASOURCE_URL
+              value: "jdbc:postgresql://notification-db:5432/notification_db"
+            - name: SPRING_DATASOURCE_USERNAME
+              value: "app"
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: "app"
+            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
+              value: "kafka:9092"
+          readinessProbe:          # готов ли под принимать трафик
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8086
+            periodSeconds: 5
+            timeoutSeconds: 3
+            failureThreshold: 3
+          livenessProbe:           # жив ли процесс (если нет, kubelet перезапустит контейнер)
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8086
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 3
+          startupProbe:
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8086
+            periodSeconds: 5
+            failureThreshold: 30
+---
+# ===== Service: постоянное имя notification:8086 (как имя сервиса в compose) =====
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification
+spec:
+  selector:
+    app: notification
+  ports:
+    - port: 8086
+      targetPort: 8086
+

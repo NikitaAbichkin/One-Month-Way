@@ -1,0 +1,178 @@
+name: day23
+
+services:
+  kafka:
+    image: apache/kafka:3.9.0
+    ports:
+      - "39092:39092"
+    environment:
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_LISTENERS: PLAINTEXT://:9092,CONTROLLER://:9093,EXTERNAL://:39092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,EXTERNAL://localhost:39092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@localhost:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT,EXTERNAL:PLAINTEXT
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 1
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 > /dev/null 2>&1 || exit 1"]
+      start_period: 20s
+      interval: 10s
+      timeout: 10s
+      retries: 5
+
+  order-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: order_db
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+    volumes:
+      - order-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -U app -d order_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  inventory-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: inventory_db
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+    volumes:
+      - inventory-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -U app -d inventory_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  payment-db:
+    image: postgres:16
+    environment:
+      POSTGRES_DB: payment_db
+      POSTGRES_USER: app
+      POSTGRES_PASSWORD: app
+    volumes:
+      - payment-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -h localhost -U app -d payment_db"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+
+  order:
+    build:
+      context: .
+      dockerfile: order-service/Dockerfile
+    ports:
+      - "8081:8081"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://order-db:5432/order_db
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT: http://tempo:4318/v1/traces
+
+      INVENTORY_URL: http://inventory:8082
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8081/actuator/health || exit 1"]
+      start_period: 30s
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    depends_on:
+      order-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+      inventory:
+        condition: service_healthy
+
+  inventory:
+    build:
+      context: .
+      dockerfile: inventory-service/Dockerfile
+    ports:
+      - "8082:8082"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://inventory-db:5432/inventory_db
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT: http://tempo:4318/v1/traces
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8082/actuator/health || exit 1"]
+      start_period: 30s
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    depends_on:
+      inventory-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+  payment:
+    build:
+      context: .
+      dockerfile: payment-service/Dockerfile
+    ports:
+      - "8083:8083"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://payment-db:5432/payment_db
+      SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+      MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT: http://tempo:4318/v1/traces
+    healthcheck:
+      test: ["CMD-SHELL", "curl -f http://localhost:8083/actuator/health || exit 1"]
+      start_period: 30s
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    depends_on:
+      payment-db:
+        condition: service_healthy
+      kafka:
+        condition: service_healthy
+
+
+
+
+  # ===== Мониторинг =====
+  prometheus:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - order
+      - inventory
+      - payment
+
+
+  tempo:
+    image: grafana/tempo:2.7.2
+    command: [ "-config.file=/etc/tempo.yaml" ]
+    ports:
+      - "4318:4318"
+    volumes:
+      - ./tempo/tempo.yaml:/etc/tempo.yaml
+      - tempo-data:/var/tempo
+
+
+  grafana:
+    image: grafana/grafana
+    ports:
+      - "3000:3000"
+    volumes:
+      - grafana-data:/var/lib/grafana
+    depends_on:
+      - prometheus
+
+volumes:
+  order-data:
+  inventory-data:
+  payment-data:
+  grafana-data:
+  tempo-data:

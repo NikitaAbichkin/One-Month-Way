@@ -1,0 +1,18 @@
+# Один этап: сборка и запуск в одном образе (с Maven и JDK)
+FROM maven:3.9-eclipse-temurin-25
+WORKDIR /build
+# модуль + родитель пом
+COPY pom.xml .
+COPY order/pom.xml order/
+# остальные модули нужны, потому что родительский pom.xml перечисляет их все
+COPY order-service/pom.xml order-service/
+COPY inventory-service/pom.xml inventory-service/
+COPY payment-service/pom.xml payment-service/
+COPY notification-service/pom.xml notification-service/
+RUN mvn -B -q -pl order -am dependency:go-offline
+
+# копируем наш код и компилируем его
+COPY order/src order/src
+RUN mvn -B -q -pl order -am -DskipTests package
+
+ENTRYPOINT ["java", "-jar", "order/target/order.jar"]

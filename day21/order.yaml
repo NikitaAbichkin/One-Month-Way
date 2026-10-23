@@ -1,0 +1,72 @@
+# ===== Deployment: "держи 1 под с order" =====
+apiVersion: apps/v1        # (оставь как есть)
+kind: Deployment             # (оставь как есть)
+metadata:
+  name:    order                   # имя Deployment: order
+spec:
+  replicas:   3         # сколько подов: 3
+  selector:
+    matchLabels:
+      app: order                   # метка: order
+  template:
+    metadata:
+      labels:
+        app: order                 # такая же метка: order
+    spec:
+      topologySpreadConstraints:
+        - maxSkew: 1
+          topologyKey: kubernetes.io/hostname
+          whenUnsatisfiable: ScheduleAnyway
+          labelSelector:
+            matchLabels:
+              app: order
+      containers:
+        - name:   order           # имя контейнера: order
+          image:  order:1.1         # образ, который ты загрузил через kind load: order:1.0
+          ports:
+            - containerPort: 8080
+          env:               # то же, что environment в compose
+            - name: SPRING_DATASOURCE_URL
+              value: jdbc:postgresql://order-db:5432/order_db
+            - name: SPRING_DATASOURCE_USERNAME
+              value: app
+            - name: SPRING_DATASOURCE_PASSWORD
+              value: app
+            - name: SPRING_JPA_HIBERNATE_DDL_AUTO
+              value: update
+            - name: APP_VERSION
+              value: "1.1"
+            - name: MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED
+              value: "true"
+          readinessProbe:            # готов ли под принимать трафик
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 5 # раз в сколько секунд
+            timeoutSeconds: 3 # сколько  ждать  ответа
+            failureThreshold: 3
+          livenessProbe:             # жив ли процесс (если нет, kubelet перезапустит контейнер)
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8080
+            initialDelaySeconds: 30 # сколько секунд ждать до  запуска liveness,readness
+            periodSeconds: 10 # раз в сколько секунд делать попытку
+            timeoutSeconds: 3 # сколько  ждать  ответа
+            failureThreshold: 3 # три раза упал = перезапуск
+          lifecycle:
+            preStop:
+              sleep:
+                seconds: 5 # работает  5 секунд когда его  удаляют из сервиса чтобы принять запросы и успеть их обработать
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: order
+spec:
+  selector:
+    app: order
+  ports:
+    - port: 8080
+      targetPort: 8080
+

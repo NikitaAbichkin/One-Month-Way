@@ -1,0 +1,38 @@
+global:
+  scrape_interval: 15s            # как часто опрашивать (по заданию)
+
+scrape_configs:
+  - job_name: api-gateway          # имя группы, например order
+    metrics_path: /actuator/prometheus             # путь, где сервис отдаёт метрики
+    static_configs:
+      - targets: [ "api-gateway:8080" ]
+
+  - job_name: user
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [ "user:8085" ]
+
+  - job_name: catalog
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [ "catalog:8084" ]
+
+  - job_name: order
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [ "order:8081" ]
+
+  - job_name: inventory
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [ "inventory:8082" ]
+
+  - job_name: payment
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets:  [ "payment:8083" ]
+
+  - job_name: notification
+    metrics_path: /actuator/prometheus
+    static_configs:
+      - targets: [ "notification:8086" ]
