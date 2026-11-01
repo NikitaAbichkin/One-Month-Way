@@ -1,4 +1,4 @@
-# ===== Deployment: один брокер Kafka (как в docker compose) =====
+# kubectl apply -f k8s/kafka.yaml
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -13,57 +13,49 @@ spec:
       labels:
         app: kafka
     spec:
-      enableServiceLinks: false    # иначе k8s подсунет переменную KAFKA_PORT=tcp://..., а образ читает все KAFKA_*
+      enableServiceLinks: false
       containers:
         - name: kafka
           image: apache/kafka:3.9.0
           ports:
             - containerPort: 9092
-          resources:
-            requests:
-              cpu: 250m
-              memory: 512Mi
-            limits:
-              cpu: 1
-              memory: 1Gi
+          readinessProbe:
+            tcpSocket:
+              port: 9092
+            periodSeconds: 5
           env:
             - name: KAFKA_NODE_ID
               value: "1"
             - name: KAFKA_PROCESS_ROLES
-              value: broker,controller
+              value: "broker,controller"
             - name: KAFKA_LISTENERS
-              value: PLAINTEXT://:9092,CONTROLLER://:9093
-            # сервисы идут к брокеру по имени Service kafka:9092
+              value: "PLAINTEXT://:9092,CONTROLLER://:9093"
             - name: KAFKA_ADVERTISED_LISTENERS
-              value: PLAINTEXT://kafka:9092
+              value: "PLAINTEXT://kafka:9092"
             - name: KAFKA_INTER_BROKER_LISTENER_NAME
-              value: PLAINTEXT
+              value: "PLAINTEXT"
             - name: KAFKA_CONTROLLER_LISTENER_NAMES
-              value: CONTROLLER
+              value: "CONTROLLER"
             - name: KAFKA_CONTROLLER_QUORUM_VOTERS
-              value: 1@localhost:9093
+              value: "1@localhost:9093"
             - name: KAFKA_LISTENER_SECURITY_PROTOCOL_MAP
-              value: PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT
+              value: "PLAINTEXT:PLAINTEXT,CONTROLLER:PLAINTEXT"
             - name: KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR
               value: "1"
             - name: KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS
               value: "1"
-          readinessProbe:          # готов ли брокер (как healthcheck в compose)
-            exec:
-              command: ["/bin/sh", "-c", "/opt/kafka/bin/kafka-broker-api-versions.sh --bootstrap-server localhost:9092 > /dev/null 2>&1"]
-            initialDelaySeconds: 20
-            periodSeconds: 10
-            timeoutSeconds: 10
-            failureThreshold: 5
+
 ---
-# ===== Service: постоянное имя kafka:9092 =====
 apiVersion: v1
 kind: Service
 metadata:
-  name: kafka
+  name: kafka   # это имя = адрес kafka:9092 для сервисов
 spec:
   selector:
     app: kafka
   ports:
-    - port: 9092
-      targetPort: 9092
+    - port: 9092 # на клиенте на какой айпи заменять
+      targetPort: 9092 # на каком айпи работает контейнер чтобы можно было
+      # переслать PodId:targetPort
+
+# order -> DNS -> CLusterIp:port -> PodId:targetPort

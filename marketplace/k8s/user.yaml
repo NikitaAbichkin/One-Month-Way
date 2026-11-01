@@ -1,74 +1,89 @@
-# ===== Deployment: поды user =====
+# kubectl apply -f k8s/user.yaml
+# ===== 1. ConfigMap: несекретные настройки user-service =====
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: user-config
+data:
+  SPRING_DATASOURCE_URL: jdbc:postgresql://user-db:5432/user_db
+  SPRING_KAFKA_BOOTSTRAP_SERVERS: kafka:9092
+  MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT: http://tempo:4318/v1/traces
+  PAYMENT_URL: http://payment:8083
+  JAVA_TOOL_OPTIONS: "-XX:MaxRAMPercentage=75"
+  MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED: "true"
+
+---
+# ===== 2. Deployment: user-service =====
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: user
 spec:
-  replicas: 1                      # сколько подов
+  replicas: 1
   selector:
     matchLabels:
       app: user
   template:
     metadata:
       labels:
-        app: user                # такая же метка
+        app: user
     spec:
-      initContainers:              # k8s не умеет depends_on: ждем, пока БД и Kafka начнут принимать подключения
-        - name: wait-for-deps
-          image: busybox:1.36
-          command: ["sh", "-c", "until nc -z user-db 5432; do sleep 2; done; until nc -z kafka 9092; do sleep 2; done;"]
       containers:
         - name: user
-          image: marketplace-user:latest   # образ из docker compose build, загруженный через kind load
-          imagePullPolicy: IfNotPresent      # без этого для тега latest k8s пойдет в интернет за образом
+          image: user:1.0
           ports:
             - containerPort: 8085
           resources:
             requests:
-              cpu: 100m
-              memory: 384Mi
+              cpu: 250m
+              memory: 768Mi
             limits:
               cpu: 1
               memory: 768Mi
-          env:                     # то же, что environment в compose
-            - name: JAVA_TOOL_OPTIONS
-              value: "-XX:MaxRAMPercentage=75"
-            - name: MANAGEMENT_ENDPOINT_HEALTH_PROBES_ENABLED
-              value: "true"
-            - name: MANAGEMENT_TRACING_SAMPLING_PROBABILITY
-              value: "0"
-            - name: SPRING_DATASOURCE_URL
-              value: "jdbc:postgresql://user-db:5432/user_db"
-            - name: SPRING_DATASOURCE_USERNAME
-              value: "app"
+
+          envFrom:
+            - configMapRef:
+                name:  user-config
+          env:
             - name: SPRING_DATASOURCE_PASSWORD
-              value: "app"
-            - name: SPRING_KAFKA_BOOTSTRAP_SERVERS
-              value: "kafka:9092"
-            - name: PAYMENT_URL
-              value: "http://payment:8083"
-          readinessProbe:          # готов ли под принимать трафик
-            httpGet:
-              path: /actuator/health/readiness
-              port: 8085
-            periodSeconds: 5
-            timeoutSeconds: 3
-            failureThreshold: 3
-          livenessProbe:           # жив ли процесс (если нет, kubelet перезапустит контейнер)
-            httpGet:
-              path: /actuator/health/liveness
-              port: 8085
-            periodSeconds: 10
-            timeoutSeconds: 3
-            failureThreshold: 3
+              valueFrom:
+                secretKeyRef:
+                  key: POSTGRES_PASSWORD
+                  name: user-db
+
           startupProbe:
             httpGet:
               path: /actuator/health/liveness
               port: 8085
             periodSeconds: 5
             failureThreshold: 30
+
+          readinessProbe:
+            httpGet:
+              path: /actuator/health/readiness
+              port: 8085
+            periodSeconds: 5 # перерыв
+            failureThreshold: 5 # колличество неудачных попыток
+            timeoutSeconds: 3 #  скольк ждать ответа по времени
+
+          livenessProbe: # жив ли процесс (если нет, kubelet перезапустит контейнер)
+            httpGet:
+              path: /actuator/health/liveness
+              port: 8085
+            periodSeconds: 10
+            failureThreshold: 5
+            timeoutSeconds: 3
+
+          lifecycle:
+            preStop:
+              sleep:
+                seconds: 5
+
+
+
+
 ---
-# ===== Service: постоянное имя user:8085 (как имя сервиса в compose) =====
+# ===== 3. Service: адрес user:8085 =====
 apiVersion: v1
 kind: Service
 metadata:
@@ -79,4 +94,3 @@ spec:
   ports:
     - port: 8085
       targetPort: 8085
-

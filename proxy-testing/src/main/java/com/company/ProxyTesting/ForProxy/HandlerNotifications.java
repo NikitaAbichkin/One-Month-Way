@@ -15,8 +15,10 @@ public class HandlerNotifications implements InvocationHandler {
 
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
+        System.out.println("TIME NOW");
         var result =  method.invoke( notificationService, args );
         return result== null ? null: result;
     }
+
 
 }

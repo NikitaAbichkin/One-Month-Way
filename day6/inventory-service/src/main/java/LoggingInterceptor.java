@@ -24,7 +24,7 @@ public class LoggingInterceptor  implements ServerInterceptor {
             @Override
             public void onCancel() {
                 long duration = System.currentTimeMillis() - startTime;
-                System.out.printf("method = %s, duration = %d  ms ITS SHIIIT%n ", methodName, duration);
+                System.out.printf("method = %s, duration = %d  ms CANCELLED%n", methodName, duration);
                 super.onCancel();
             }
 

@@ -1,0 +1,56 @@
+# kubectl apply -f k8s/catalog-db.yaml
+# ===== 1. Secret: пароль БД (его же потом возьмёт catalog-service) =====
+apiVersion: v1
+kind: Secret
+metadata:
+  name: catalog-db
+stringData:
+  POSTGRES_PASSWORD: app
+---
+# ===== 2. Deployment: postgres =====
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: catalog-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: catalog-db
+  template:
+    metadata:
+      labels:
+        app: catalog-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16
+          ports:
+            - containerPort: 5432
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-h","localhost", "-U", "app", "-d", "catalog_db"]
+            periodSeconds: 5
+          env:
+            - name: POSTGRES_DB
+              value: catalog_db
+            - name: POSTGRES_USER
+              value: app
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: catalog-db
+                  key: POSTGRES_PASSWORD
+
+---
+# ===== 3. Service: адрес catalog-db:5432 =====
+apiVersion: v1
+kind: Service
+metadata:
+  name: catalog-db
+spec:
+  selector:
+    app: catalog-db
+  ports:
+    - port: 5432
+      targetPort: 5432

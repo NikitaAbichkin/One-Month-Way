@@ -1,0 +1,56 @@
+# kubectl apply -f k8s/inventory-db.yaml
+# ===== 1. Secret: пароль БД (его же потом возьмёт inventory-service) =====
+apiVersion: v1
+kind: Secret
+metadata:
+  name: inventory-db
+stringData:
+  POSTGRES_PASSWORD: app
+---
+# ===== 2. Deployment: postgres =====
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: inventory-db
+  template:
+    metadata:
+      labels:
+        app: inventory-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16
+          ports:
+            - containerPort: 5432
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-h","localhost", "-U", "app", "-d", "inventory_db"]
+            periodSeconds: 5
+          env:
+            - name: POSTGRES_DB
+              value: inventory_db
+            - name: POSTGRES_USER
+              value: app
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: inventory-db
+                  key: POSTGRES_PASSWORD
+
+---
+# ===== 3. Service: адрес inventory-db:5432 =====
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-db
+spec:
+  selector:
+    app: inventory-db
+  ports:
+    - port: 5432
+      targetPort: 5432

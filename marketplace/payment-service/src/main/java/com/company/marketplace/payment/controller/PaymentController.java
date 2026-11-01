@@ -1,6 +1,8 @@
 package com.company.marketplace.payment.controller;
 
+import com.company.marketplace.payment.dto.TopUpRequest;
 import com.company.marketplace.payment.dto.WalletRequest;
+import com.company.marketplace.payment.dto.WalletResponse;
 import com.company.marketplace.payment.model.PaymentRow;
 import com.company.marketplace.payment.repository.PaymentRepository;
 import org.slf4j.Logger;
@@ -36,6 +38,26 @@ public class PaymentController {
         boolean created = paymentRepository.createWallet(request.userId(), initialBalance);
         log.info("create wallet: user={}, created={}", request.userId(), created);
         return created ? ResponseEntity.status(201).build() : ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/wallets/{userId}")
+    public ResponseEntity<WalletResponse> getWallet(@PathVariable Long userId) {
+        return paymentRepository.findBalance(userId)
+                .map(balance -> ResponseEntity.ok(new WalletResponse(userId, balance)))
+                .orElseGet(() -> ResponseEntity.notFound().build());
+    }
+
+    // пополнение баланса: 400 - сумма не положительная, 404 - кошелька нет
+    @PostMapping("/wallets/{userId}/top-up")
+    public ResponseEntity<WalletResponse> topUp(@PathVariable Long userId, @RequestBody TopUpRequest request) {
+        if (request.amount() == null || request.amount().signum() <= 0) {
+            return ResponseEntity.badRequest().build();
+        }
+        if (paymentRepository.topUp(userId, request.amount()) == 0) {
+            return ResponseEntity.notFound().build();
+        }
+        log.info("top up: user={}, amount={}", userId, request.amount());
+        return getWallet(userId);
     }
 
     @GetMapping("/order/{orderId}")

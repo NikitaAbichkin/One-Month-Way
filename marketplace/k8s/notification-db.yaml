@@ -1,0 +1,56 @@
+# kubectl apply -f k8s/notification-db.yaml
+# ===== 1. Secret: пароль БД (его же потом возьмёт notification-service) =====
+apiVersion: v1
+kind: Secret
+metadata:
+  name: notification-db
+stringData:
+  POSTGRES_PASSWORD: app
+---
+# ===== 2. Deployment: postgres =====
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: notification-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: notification-db
+  template:
+    metadata:
+      labels:
+        app: notification-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16
+          ports:
+            - containerPort: 5432
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-h","localhost", "-U", "app", "-d", "notification_db"]
+            periodSeconds: 5
+          env:
+            - name: POSTGRES_DB
+              value: notification_db
+            - name: POSTGRES_USER
+              value: app
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: notification-db
+                  key: POSTGRES_PASSWORD
+
+---
+# ===== 3. Service: адрес notification-db:5432 =====
+apiVersion: v1
+kind: Service
+metadata:
+  name: notification-db
+spec:
+  selector:
+    app: notification-db
+  ports:
+    - port: 5432
+      targetPort: 5432

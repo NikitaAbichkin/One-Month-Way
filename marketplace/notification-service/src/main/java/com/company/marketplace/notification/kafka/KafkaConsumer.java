@@ -4,6 +4,7 @@ import com.company.marketplace.notification.config.Topics;
 import com.company.marketplace.notification.dto.NotificationRequest;
 import com.company.marketplace.notification.dto.UserEvent;
 import com.company.marketplace.notification.saga.Saga;
+import org.slf4j.MDC;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -19,7 +20,7 @@ public class KafkaConsumer {
     // команда от order: заказ завершен или отменен
     @KafkaListener(topics = Topics.NOTIFICATION)
     public void notificationListener(NotificationRequest request){
-        log.info("notification request: orderId={}, status={}", request.orderId(), request.statusMessage());
+        log.info("traceId:{} orderId:{} event:{}", MDC.get("traceId"), request.orderId(), request.statusMessage());
         saga.notifyUser(request);
     }
 

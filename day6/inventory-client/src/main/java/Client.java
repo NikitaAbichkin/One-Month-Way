@@ -37,7 +37,8 @@ public class Client {
                         .checkStock(request);
 
 
-                System.out.printf("sku = %-16s instock = %-5s quantity = %d%n", response.getSku(),
+                System.out.printf("sku = %-16s instock = %-5s quantity = %d%n",
+                        response.getSku(),
                         response.getInStock(),
                         response.getQuantity());
             } catch (StatusRuntimeException e) {

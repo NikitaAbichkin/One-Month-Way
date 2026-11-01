@@ -5,6 +5,7 @@ import com.company.marketplace.order.dto.OrderEventKafka;
 import com.company.marketplace.order.dto.ProductEvent;
 import com.company.marketplace.order.model.StatusMessage;
 import com.company.marketplace.order.saga.Saga;
+import org.slf4j.MDC;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -26,7 +27,7 @@ public class KafkaConsumer {
 
     @KafkaListener(topics = Topics.ORDER)
     public  void topicListner(OrderEventKafka event){
-        log.info("request: orderId={}, status={}", event.orderId(), event.statusMessage());
+        log.info("traceId:{} orderId:{} event:{}", MDC.get("traceId"), event.orderId(), event.statusMessage());
         switch (event.statusMessage()){
             case StatusMessage.INVENTORY_RESERVED -> saga.inventoryReserved(event.orderId());
             case INVENTORY_REJECTED -> saga.inventoryRejected(event.orderId());

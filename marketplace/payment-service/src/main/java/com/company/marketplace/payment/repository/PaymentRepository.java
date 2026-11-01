@@ -83,6 +83,24 @@ public class PaymentRepository {
                 .update() > 0;
     }
 
+    public Optional<BigDecimal> findBalance(Long userId) {
+        return jdbcClient.sql("select balance from balance where user_id = :userId")
+                .param("userId", userId)
+                .query(BigDecimal.class)
+                .optional();
+    }
+
+    // 0 - кошелька нет
+    public int topUp(Long userId, BigDecimal amount) {
+        return jdbcClient.sql("""
+        update  balance set "balance" = "balance" + :amount
+                        where user_id = :userId
+        """)
+                .param("amount", amount)
+                .param("userId", userId)
+                .update();
+    }
+
     public Optional<PaymentRow> findByOrder(Long orderId) {
         return jdbcClient.sql("select id, user_id, order_id, total_price, idempotence_key, status from payments where order_id = :orderId")
                 .param("orderId", orderId)

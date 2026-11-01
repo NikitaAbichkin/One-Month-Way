@@ -1,29 +1,58 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
-  <component name="Encoding">
+  <component name="Encoding" defaultCharsetForPropertiesFiles="UTF-8">
+    <file url="file://$PROJECT_DIR$/Day12/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/ReflectionTesting/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/day1/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day10/Order-service10/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day10/V2Inventory-service10/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day10/inventory-service10/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day13/inventory-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day13/notification-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day13/order-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day13/payment-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day14-replica/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day14/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day15/inventory-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day15/notification-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day15/order-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day15/payment-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day16/V2Gateway/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day16/gateway/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day16/mobile-bff/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day17/V2Inventory/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day17/discovery/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day17/inventory/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day17/order/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day18/inventory/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day18/order/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day19/inventory/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day19/order/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day20/inventory-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day20/notification-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day20/order-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day20/order/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day20/payment-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day22/inventory/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day22/order/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day23/inventory-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day23/order-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day23/payment-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/day4/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/day5/inventory-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/day5/order-service/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/day5/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/day5/src/main/resources" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/day6/inventory-client/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/day6/inventory-contract/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/day6/inventory-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/day6/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/day6/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/inventory-service/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/order-inventory-system/inventory-service/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/order-inventory-system/order-service/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/order-inventory-system/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/order-inventory-system/src/main/resources" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/order-service/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/proxy-testing/ReflectionTesting/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day8/notification/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/day8/order/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/marketplace/api-gateway/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/marketplace/catalog-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/marketplace/inventory-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/marketplace/notification-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/marketplace/order-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/marketplace/payment-service/src/main/java" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/marketplace/user-service/src/main/java" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/proxy-testing/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/src/main/java" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/src/main/resources" charset="UTF-8" />
-    <file url="file:///src/main/java" charset="UTF-8" />
-    <file url="file:///src/main/resources" charset="UTF-8" />
   </component>
 </project>

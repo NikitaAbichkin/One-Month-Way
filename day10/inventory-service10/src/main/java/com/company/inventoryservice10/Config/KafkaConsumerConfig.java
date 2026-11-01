@@ -38,7 +38,6 @@ public class KafkaConsumerConfig {
         config.put(JacksonJsonDeserializer.VALUE_DEFAULT_TYPE, OrderCreatedEvent.class.getName());
         config.put(JacksonJsonDeserializer.USE_TYPE_INFO_HEADERS, false);
         config.put(ConsumerConfig.MAX_POLL_RECORDS_CONFIG, 10);
-//        config.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, 1000);
         config.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
 
         config.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");

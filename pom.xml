@@ -18,16 +18,17 @@
     <modules>
         <module>day1</module>
         <module>day4</module>
-        <module>proxy-testing</module>
         <module>day5</module>
         <module>day6</module>
-        <module>ReflectionTesting</module>
         <module>day8</module>
         <module>day10</module>
         <module>day10/Order-service10</module>
         <module>day10/inventory-service10</module>
         <module>day10/V2Inventory-service10</module>
-        <module>Day12</module>
+        <module>day11</module>
+        <module>day11/order-service11</module>
+        <module>day11/inventory-service11</module>
+        <module>day12</module>
         <module>day13</module>
         <module>day14</module>
         <module>day14-replica</module>
@@ -42,7 +43,7 @@
         <module>day22</module>
         <module>day23</module>
         <module>marketplace</module>
-
+        <module>proxy-testing</module>
     </modules>
 
 

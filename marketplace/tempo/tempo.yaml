@@ -1,12 +1,12 @@
 server:
-  http_listen_port: 3200 # апи для графаны
+  http_listen_port: 3200 # апи для графаны чтобы графана могла забрать трейсы
 
 distributor:
   receivers:
     otlp:
       protocols:
         http:
-          endpoint: 0.0.0.0:4318 # на какой порт отправлять запросы
+          endpoint: 0.0.0.0:4318 # порт на который стучаться мои сервисы чтобы отпраить трейсы
 
 storage:
   trace:

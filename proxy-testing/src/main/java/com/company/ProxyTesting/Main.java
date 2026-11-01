@@ -9,9 +9,9 @@ import java.lang.reflect.Proxy;
 public class Main {
     static void main() {
         NotificationService notificationService = new EmailNotification(10);
-        NotificationService notificationService1 = new EmailNotification(111);
 
-        // создал прокси который
+        // создал прокси
+        // прописанно что тут я создаю Proxy с моим заранее прописанным heandler-ом
         notificationService = (NotificationService) Proxy.newProxyInstance
                 (EmailNotification.class.getClassLoader(),
                         new Class[]{NotificationService.class},

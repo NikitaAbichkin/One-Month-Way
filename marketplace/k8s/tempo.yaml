@@ -1,0 +1,93 @@
+# kubectl apply -f k8s/tempo.yaml
+# ===== 1. ConfigMap: содержимое tempo/tempo.yaml целиком =====
+# кладем переменные окружения для темпо через yaml файл
+#Config Map это просто настройки переменных через файл
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tempo-config
+data:
+  tempo.yaml: |                # ключ = имя файла, | = дальше многострочный текст
+    server:
+      http_listen_port: 3200  # эндпоинт для графаны чтобы она могла взять трейсы 
+
+    distributor:
+      receivers:
+        otlp:
+          protocols:
+            http:
+              endpoint: 0.0.0.0:4318 # порт на который стучаться мои сервисы чтобы отпраить трейсы
+
+    storage:
+      trace:
+        backend: local
+        local:
+          path: /var/tempo/blocks
+        wal:
+          path: /var/tempo/wal
+---
+# ===== 2. Deployment: tempo =====
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: tempo
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: tempo
+  template:
+    metadata:
+      labels:
+        app: tempo
+    spec:
+      containers:
+        - name: tempo
+          image: grafana/tempo:2.7.2
+          args: ["-config.file=/etc/tempo/tempo.yaml"]   # в compose это command:
+          ports:
+            - containerPort: 4318      # сюда сервисы шлют трейсы
+            - containerPort: 3200      # отсюда Grafana читает трейсы
+
+
+          volumeMounts: # Говорим куда в контейнере положить
+          - name: config
+            mountPath: /etc/tempo
+          - name: data
+            mountPath: /var/tempo
+
+      volumes: # говорю что подключить ( конфиг файл),
+        - name: config
+          configMap:
+            name: tempo-config
+        - name: data
+          emptyDir: {}
+
+
+
+
+
+
+
+
+
+
+
+
+
+---
+# ===== 3. Service: tempo:4318 (трейсы) и tempo:3200 (для Grafana) =====
+apiVersion: v1
+kind: Service
+metadata:
+  name: tempo
+spec:
+  selector:
+    app: tempo
+  ports:
+    - name: otlp               # если портов несколько, у каждого должно быть имя
+      port: 4318
+      targetPort: 4318
+    - name: api
+      port: 3200
+      targetPort: 3200

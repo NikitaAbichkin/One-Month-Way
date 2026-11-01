@@ -1,4 +1,5 @@
-# ===== Deployment: веб-интерфейс Kafka (как kafka-ui в docker compose) =====
+# kubectl apply -f k8s/kafka-ui.yaml
+# открыть: kubectl port-forward svc/kafka-ui 8090:8080  ->  http://localhost:8090
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -13,35 +14,26 @@ spec:
       labels:
         app: kafka-ui
     spec:
-      enableServiceLinks: false    # не подсовывать переменные Service'ов (kafka, kafka-ui) в окружение
       containers:
         - name: kafka-ui
           image: provectuslabs/kafka-ui:latest
           ports:
             - containerPort: 8080
-          resources:
-            requests:
-              cpu: 100m
-              memory: 256Mi
-            limits:
-              cpu: 500m
-              memory: 512Mi
           env:
             - name: KAFKA_CLUSTERS_0_NAME
               value: marketplace
-            # брокер по имени Service kafka
             - name: KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS
               value: kafka:9092
 ---
-# ===== Service: постоянное имя kafka-ui:8080 =====
-# наружу: kubectl port-forward svc/kafka-ui 8090:8080  ->  http://localhost:8090
 apiVersion: v1
 kind: Service
 metadata:
   name: kafka-ui
 spec:
+  type: NodePort
   selector:
     app: kafka-ui
   ports:
     - port: 8080
       targetPort: 8080
+      nodePort: 30001

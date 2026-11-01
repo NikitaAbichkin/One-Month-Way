@@ -1,10 +1,15 @@
-# kind create cluster --name marketplace --config kind-config.yaml  (из папки marketplace)
+# kind create cluster --name marketplace --config kind-config.yaml   (из папки marketplace)
 kind: Cluster
 apiVersion: kind.x-k8s.io/v1alpha4
 nodes:
   - role: control-plane
-    extraPortMappings:           # NodePort 30080 (api-gateway) доступен на localhost:8080
-      - containerPort: 30080
-        hostPort: 8080
-        protocol: TCP
+    extraPortMappings:
+    - containerPort: 30000
+      hostPort: 8080
+    - containerPort: 30001
+      hostPort: 8090
+    - containerPort: 30002
+      hostPort: 3000
   - role: worker
+  - role: worker
+

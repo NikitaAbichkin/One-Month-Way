@@ -131,9 +131,10 @@ services:
     environment:
       USER_URL: http://user:8085
       CATALOG_URL: http://catalog:8084
-      ORDER_URL: http://order:8081
-      INVENTORY_URL: http://inventory:8082
       PAYMENT_URL: http://payment:8083
+      INVENTORY_URL: http://inventory:8082
+      ORDER_URL: http://order:8081
+
       MANAGEMENT_OPENTELEMETRY_TRACING_EXPORT_OTLP_ENDPOINT: http://tempo:4318/v1/traces
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/actuator/health || exit 1"]
@@ -289,8 +290,6 @@ services:
         condition: service_healthy
       kafka:
         condition: service_healthy
-
-
 
 
   # ===== Мониторинг =====

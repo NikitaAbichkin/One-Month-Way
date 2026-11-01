@@ -6,7 +6,7 @@
 cd ~/путь/к/One-Month-Way/marketplace
 ```
 
-Нужно: Docker Desktop (запущен), `kind`, `kubectl` (`brew install kind kubectl`).
+Нужно: Docker Desktop (запущен).
 
 ---
 
@@ -34,100 +34,7 @@ docker compose down -v                  # остановить и удалить
 
 ---
 
-## 2. Запуск в Kubernetes (kind)
-
-### 2.1 Собрать образы
-
-Образы собирает compose, они называются `marketplace-<сервис>:latest`:
-
-```zsh
-docker compose build
-docker images | grep marketplace
-```
-
-### 2.2 Создать кластер
-
-```zsh
-kind create cluster --name marketplace --config kind-config.yaml
-kubectl cluster-info --context kind-marketplace
-```
-
-### 2.3 Подгрузить образы в кластер
-
-kind не видит образы из Docker Desktop, их нужно загрузить в ноды:
-
-```zsh
-kind load docker-image \
-  marketplace-api-gateway:latest \
-  marketplace-user:latest \
-  marketplace-catalog:latest \
-  marketplace-order:latest \
-  marketplace-inventory:latest \
-  marketplace-payment:latest \
-  marketplace-notification:latest \
-  --name marketplace
-```
-
-Проверить, что образы на ноде:
-
-```zsh
-docker exec marketplace-worker crictl images | grep marketplace
-```
-
-После пересборки образа загрузи его заново и перезапусти деплоймент:
-
-```zsh
-docker compose build order
-kind load docker-image marketplace-order:latest --name marketplace
-kubectl rollout restart deployment/order
-```
-
-### 2.4 Применить манифесты и посмотреть поды
-
-```zsh
-kubectl apply -f k8s
-
-kubectl get pods                 # список подов (ждем Running и READY 1/1)
-kubectl get pods -w              # то же, с обновлением в реальном времени (выход: Ctrl+C)
-kubectl get svc                  # сервисы
-kubectl get pods -o wide         # на какой ноде каждый под
-```
-
-Если под не стартует:
-
-```zsh
-kubectl describe pod <имя-пода>          # события: образ не найден, проба не прошла
-kubectl logs <имя-пода>                  # логи
-kubectl logs deploy/order -f             # логи деплоймента
-kubectl logs <имя-пода> -c wait-for-deps # init-контейнер: чего ждет
-```
-
-Письма в кластере:
-
-```zsh
-kubectl logs deploy/notification | grep "@gmail.com"
-```
-
-### 2.5 Kafka UI в кластере
-
-```zsh
-kubectl port-forward svc/kafka-ui 8090:8080
-# открыть http://localhost:8090 (терминал держать открытым)
-```
-
-### 2.6 Удалить всё
-
-```zsh
-kubectl delete -f k8s        # убрать приложения
-kind delete cluster --name marketplace   # удалить кластер целиком
-```
-
-API в кластере доступен на http://localhost:8080 (NodePort 30080 проброшен в `kind-config.yaml`).
-В кластере нет Tempo/Prometheus/Grafana: они остаются в compose.
-
----
-
-## 3. Сценарий для защиты (curl, zsh)
+## 2. Сценарий для защиты (curl, zsh)
 
 Все запросы идут через api-gateway.
 
@@ -171,7 +78,7 @@ docker compose logs notification --since 3m | grep "@gmail.com"
 
 ---
 
-## 4. Полезное
+## 3. Полезное
 
 ```zsh
 # сбросить БД одного сервиса в compose

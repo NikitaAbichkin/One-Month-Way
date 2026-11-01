@@ -3,6 +3,7 @@ package com.company.marketplace.payment.kafka;
 import com.company.marketplace.payment.config.Topics;
 import com.company.marketplace.payment.dto.OrderPaymentRequest;
 import com.company.marketplace.payment.saga.Saga;
+import org.slf4j.MDC;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.stereotype.Component;
 
@@ -17,7 +18,7 @@ public class KafkaConsumer {
 
     @KafkaListener(topics = Topics.PAYMENT)
     public  void listener(OrderPaymentRequest request){
-        log.info("payment request: orderId={}, status={}", request.orderId(), request.statusMessage());
+        log.info("traceId:{} orderId:{} event:{}", MDC.get("traceId"), request.orderId(), request.statusMessage());
         switch (request.statusMessage()){
             case PAYMENT_CREATE -> saga.create(request);
             case PAYMENT_REFUND -> saga.refund(request);

@@ -3,6 +3,9 @@ package com.company.marketplace.order.controller;
 import com.company.marketplace.order.dto.OrderResponse;
 import com.company.marketplace.order.model.OrderView;
 import com.company.marketplace.order.saga.Saga;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -15,6 +18,7 @@ import java.util.Optional;
 
 @RestController
 public class OrderController {
+    private static final Logger log = LoggerFactory.getLogger(OrderController.class);
     private final Saga saga;
 
     public OrderController(Saga saga) {
@@ -33,7 +37,7 @@ public class OrderController {
 //        Thread.sleep(10000);
         // id нового заказа - в заголовке Location (повторный запрос с тем же ключом: заголовка нет)
         Optional<Long> id = saga.OrderCreate(request);
-        System.out.println(requestId);
+        log.info("traceId:{} orderId:{} event:HTTP POST /orders", MDC.get("traceId"), id.map(String::valueOf).orElse("duplicate"));
         return id.map(orderId -> ResponseEntity.accepted().header("Location", "/orders/" + orderId).<Void>build())
                 .orElseGet(() -> ResponseEntity.accepted().build());
     }

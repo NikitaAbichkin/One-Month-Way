@@ -1,0 +1,56 @@
+# kubectl apply -f k8s/payment-db.yaml
+# ===== 1. Secret: пароль БД (его же потом возьмёт payment-service) =====
+apiVersion: v1
+kind: Secret
+metadata:
+  name: payment-db
+stringData:
+  POSTGRES_PASSWORD: app
+---
+# ===== 2. Deployment: postgres =====
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: payment-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: payment-db
+  template:
+    metadata:
+      labels:
+        app: payment-db
+    spec:
+      containers:
+        - name: postgres
+          image: postgres:16
+          ports:
+            - containerPort: 5432
+          readinessProbe:
+            exec:
+              command: ["pg_isready", "-h","localhost", "-U", "app", "-d", "payment_db"]
+            periodSeconds: 5
+          env:
+            - name: POSTGRES_DB
+              value: payment_db
+            - name: POSTGRES_USER
+              value: app
+            - name: POSTGRES_PASSWORD
+              valueFrom:
+                secretKeyRef:
+                  name: payment-db
+                  key: POSTGRES_PASSWORD
+
+---
+# ===== 3. Service: адрес payment-db:5432 =====
+apiVersion: v1
+kind: Service
+metadata:
+  name: payment-db
+spec:
+  selector:
+    app: payment-db
+  ports:
+    - port: 5432
+      targetPort: 5432
