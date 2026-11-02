@@ -47,3 +47,9 @@
 - запуск в Docker Compose или в Kubernetes (kind).
 
 Запуск и сценарий: [`marketplace/COMMANDS.md`](marketplace/COMMANDS.md), запросы для демо: [`marketplace/DEMO.md`](marketplace/DEMO.md), манифесты: [`marketplace/k8s`](marketplace/k8s).
+
+### Диаграммы
+
+Use Case, C4 (Level 1 и 2), диаграмма компонентов, Activity (сага оформления заказа) и диаграмма классов — [открыть в полном размере](marketplace/docs/diagrams.png).
+
+[![Диаграммы marketplace](marketplace/docs/diagrams.png)](marketplace/docs/diagrams.png)
